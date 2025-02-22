@@ -14,4 +14,10 @@
 ##  © MRFDEV.com - All Rights Reserved
 ##
 */
-(async a=>{(await chrome.storage.local.get({convertshorts:a.convertshorts})).convertshorts&&/^\/shorts\/[^\/]+/.test(document.location.pathname)&&document.location.replace("https://www.youtube.com/watch?v="+document.location.pathname.match(/\/shorts\/([^\/]+)/)[1])})(config);
+(async config => {
+    const { convertshorts: convertShorts } = await chrome.storage.local.get({ convertshorts: config.convertshorts });
+    if (convertShorts && /^\/shorts\/[^\/]+/.test(document.location.pathname)) {
+        const videoId = document.location.pathname.match(/\/shorts\/([^\/]+)/)[1];
+        document.location.replace(`https://www.youtube.com/watch?v=${videoId}`);
+    }
+})(config);
