@@ -14,4 +14,31 @@
 ##  © MRFDEV.com - All Rights Reserved
 ##
 */
-(c=>{window.wrappedJSObject||(chrome.storage.onChanged.addListener(a=>{for(const b in a)void 0!==a[b].newValue&&Object.hasOwn(c,b)&&document.dispatchEvent(new CustomEvent("efyt-preference-changed",{detail:{name:b,value:a[b].newValue}}))}),chrome.storage.local.get(c,a=>{document.dispatchEvent(new CustomEvent("efyt-init",{detail:{prefs:a,version:chrome.runtime.getManifest().version,messages:{screenshot:chrome.i18n.getMessage("screenshot")}}}))}))})(configEmbed);
+((config) => {
+    if (!window.wrappedJSObject) {
+        chrome.storage.onChanged.addListener((changes) => {
+            for (const key in changes) {
+                if (changes[key].newValue !== undefined && Object.hasOwn(config, key)) {
+                    document.dispatchEvent(new CustomEvent("efyt-preference-changed", {
+                        detail: {
+                            name: key,
+                            value: changes[key].newValue
+                        }
+                    }));
+                }
+            }
+        });
+
+        chrome.storage.local.get(config, (prefs) => {
+            document.dispatchEvent(new CustomEvent("efyt-init", {
+                detail: {
+                    prefs: prefs,
+                    version: chrome.runtime.getManifest().version,
+                    messages: {
+                        screenshot: chrome.i18n.getMessage("screenshot")
+                    }
+                }
+            }));
+        });
+    }
+})(configEmbed);
