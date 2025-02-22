@@ -14,8 +14,129 @@
 ##  © MRFDEV.com - All Rights Reserved
 ##
 */
-(b=>{function q(){var a=[],c;for([c,e]of Object.entries(d.customcolors)){if("--shadow"===c){var f=e.replace("#","");var e=parseInt(f.substring(0,2),16);var r=parseInt(f.substring(2,4),16);f=parseInt(f.substring(4,6),16);e=`0 1px .5px rgba(${e}, ${r}, ${f}, .2)`}a.push(c+":"+e)}return":root{"+a.join(";")+"}"}function k(){if(d.darktheme&&"default-dark"!==d.theme){var a=b.createElement("link");a.id="efyt-dark-theme";a.rel="stylesheet";a.href=("enhanced-dark"===d.theme?g+"main.css?v=":h+
-"youtube-deep-dark.material.css?v=")+l;b.head.appendChild(a)}}function m(){if(d.darktheme&&"default-dark"!==d.theme){if("enhanced-dark"===d.theme||"youtube-deep-dark"===d.theme){var a=b.createElement("link");a.id="efyt-dark-theme-colors";a.rel="stylesheet";a.href="enhanced-dark"===d.theme?g+d.themevariant:h+d.vendorthemevariant}else"youtube-deep-dark-custom"===d.theme&&(a=b.createElement("style"),a.id="efyt-dark-theme-colors",a.textContent=q());b.head.appendChild(a)}}function n(){if(d.customtheme){var a=
-b.createElement("style");a.id="efyt-custom-theme";a.textContent=d.customcss;b.head.appendChild(a)}}var d,l,g,h,p;b.addEventListener("DOMContentLoaded",()=>{d?(m(),k(),n()):p=[m,k,n]},{once:!0});b.addEventListener("efyt-init",a=>{d=a.detail.prefs;l=a.detail.version;g=a.detail.themes;h=a.detail.vendorthemes;p&&p.forEach(c=>{c()})},{once:!0});b.addEventListener("efyt-preference-changed",a=>{var c=a.detail.name;a=a.detail.value;d[c]=a;switch(c){case "customcolors":if(a=b.head.querySelector("#efyt-dark-theme-colors"))a.textContent=
-q();break;case "customcss":if(c=b.head.querySelector("#efyt-custom-theme"))c.textContent=a,b.head.appendChild(c);break;case "customtheme":c=b.head.querySelector("#efyt-custom-theme");a&&!c?n():!a&&c&&b.head.removeChild(c);break;case "darktheme":case "theme":"darktheme"===c&&!a||"default-dark"===d.theme?(a=b.head.querySelector("#efyt-dark-theme"),c=b.head.querySelector("#efyt-dark-theme-colors"),a&&b.head.removeChild(a),c&&b.head.removeChild(c)):((a=b.head.querySelector("#efyt-dark-theme-colors"))&&
-b.head.removeChild(a),m(),(a=b.head.querySelector("#efyt-dark-theme"))?a.href=("enhanced-dark"===d.theme?g+"main.css?v=":h+"youtube-deep-dark.material.css?v=")+l:k(),d.customtheme&&(c=b.head.querySelector("#efyt-custom-theme"))&&b.head.appendChild(c));break;case "themevariant":case "vendorthemevariant":if(c=b.head.querySelector("#efyt-dark-theme-colors"),null==c?0:c.hasAttribute("href"))c.href=("enhanced-dark"===d.theme?g:h)+a}})})(document);
+((document) => {
+    const createCustomColorsStyle = () => {
+        const styles = [];
+        for (const [key, value] of Object.entries(preferences.customcolors)) {
+            let styleValue = value;
+            if (key === "--shadow") {
+                const hex = value.replace("#", "");
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+                styleValue = `0 1px .5px rgba(${r}, ${g}, ${b}, .2)`;
+            }
+            styles.push(`${key}:${styleValue}`);
+        }
+        return `:root{${styles.join(";")}}`;
+    };
+
+    const applyDarkTheme = () => {
+        if (preferences.darktheme && preferences.theme !== "default-dark") {
+            const link = document.createElement("link");
+            link.id = "efyt-dark-theme";
+            link.rel = "stylesheet";
+            link.href = (preferences.theme === "enhanced-dark" ? enhancedDarkThemeUrl : vendorThemeUrl) + `main.css?v=${version}`;
+            document.head.appendChild(link);
+        }
+    };
+
+    const applyDarkThemeColors = () => {
+        if (preferences.darktheme && preferences.theme !== "default-dark") {
+            let link;
+            if (preferences.theme === "enhanced-dark" || preferences.theme === "youtube-deep-dark") {
+                link = document.createElement("link");
+                link.id = "efyt-dark-theme-colors";
+                link.rel = "stylesheet";
+                link.href = preferences.theme === "enhanced-dark" ? enhancedDarkThemeUrl + preferences.themevariant : vendorThemeUrl + preferences.vendorthemevariant;
+            } else if (preferences.theme === "youtube-deep-dark-custom") {
+                link = document.createElement("style");
+                link.id = "efyt-dark-theme-colors";
+                link.textContent = createCustomColorsStyle();
+            }
+            document.head.appendChild(link);
+        }
+    };
+
+    const applyCustomTheme = () => {
+        if (preferences.customtheme) {
+            const style = document.createElement("style");
+            style.id = "efyt-custom-theme";
+            style.textContent = preferences.customcss;
+            document.head.appendChild(style);
+        }
+    };
+
+    let preferences, version, enhancedDarkThemeUrl, vendorThemeUrl, pendingFunctions;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        if (preferences) {
+            applyDarkThemeColors();
+            applyDarkTheme();
+            applyCustomTheme();
+        } else {
+            pendingFunctions = [applyDarkThemeColors, applyDarkTheme, applyCustomTheme];
+        }
+    }, { once: true });
+
+    document.addEventListener("efyt-init", (event) => {
+        preferences = event.detail.prefs;
+        version = event.detail.version;
+        enhancedDarkThemeUrl = event.detail.themes;
+        vendorThemeUrl = event.detail.vendorthemes;
+        if (pendingFunctions) {
+            pendingFunctions.forEach(fn => fn());
+        }
+    }, { once: true });
+
+    document.addEventListener("efyt-preference-changed", (event) => {
+        const { name, value } = event.detail;
+        preferences[name] = value;
+        switch (name) {
+            case "customcolors":
+                const customColorsStyle = document.head.querySelector("#efyt-dark-theme-colors");
+                if (customColorsStyle) customColorsStyle.textContent = createCustomColorsStyle();
+                break;
+            case "customcss":
+                const customThemeStyle = document.head.querySelector("#efyt-custom-theme");
+                if (customThemeStyle) customThemeStyle.textContent = value;
+                break;
+            case "customtheme":
+                const existingCustomThemeStyle = document.head.querySelector("#efyt-custom-theme");
+                if (value && !existingCustomThemeStyle) {
+                    applyCustomTheme();
+                } else if (!value && existingCustomThemeStyle) {
+                    document.head.removeChild(existingCustomThemeStyle);
+                }
+                break;
+            case "darktheme":
+            case "theme":
+                const darkThemeLink = document.head.querySelector("#efyt-dark-theme");
+                const darkThemeColorsLink = document.head.querySelector("#efyt-dark-theme-colors");
+                if ((name === "darktheme" && !value) || preferences.theme === "default-dark") {
+                    if (darkThemeLink) document.head.removeChild(darkThemeLink);
+                    if (darkThemeColorsLink) document.head.removeChild(darkThemeColorsLink);
+                } else {
+                    if (darkThemeColorsLink) document.head.removeChild(darkThemeColorsLink);
+                    applyDarkThemeColors();
+                    if (darkThemeLink) {
+                        darkThemeLink.href = (preferences.theme === "enhanced-dark" ? enhancedDarkThemeUrl : vendorThemeUrl) + `main.css?v=${version}`;
+                    } else {
+                        applyDarkTheme();
+                    }
+                    if (preferences.customtheme) {
+                        const customThemeStyle = document.head.querySelector("#efyt-custom-theme");
+                        if (customThemeStyle) document.head.appendChild(customThemeStyle);
+                    }
+                }
+                break;
+            case "themevariant":
+            case "vendorthemevariant":
+                const themeColorsLink = document.head.querySelector("#efyt-dark-theme-colors");
+                if (themeColorsLink && themeColorsLink.hasAttribute("href")) {
+                    themeColorsLink.href = (preferences.theme === "enhanced-dark" ? enhancedDarkThemeUrl : vendorThemeUrl) + value;
+                }
+                break;
+        }
+    });
+})(document);
