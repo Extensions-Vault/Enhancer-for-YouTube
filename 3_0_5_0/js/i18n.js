@@ -14,13 +14,192 @@
 ##  © MRFDEV.com - All Rights Reserved
 ##
 */
-(c=>{function r(a){c.body.classList.add("overflow-hidden");g.style.display="block";a.style.display="block";a.scrollTop=0;g.classList.add("in");setTimeout(()=>{c.body.classList.add("modal-open");a.querySelector("button.close-modal").focus()},50)}function t(a){c.body.classList.remove("modal-open");setTimeout(()=>{a.style.display="none";g.classList.add("fade");g.classList.remove("in");setTimeout(()=>{g.style.display="none";c.body.classList.remove("overflow-hidden");"donate-modal"===a.id?
-c.querySelector("nav .donate a").focus():"i18n-modal"===a.id&&c.querySelector("#generate-code-btn").focus()},300)},300)}function u(){var a=c.querySelector("main"),b=c.createElement("style");b.textContent=`:root{--main-inset-shadow-top:${a.offsetTop}px;--main-inset-shadow-width:${a.clientWidth}px}`;c.head.appendChild(b)}var m,v,B="am bn fil gu kn ml mr sw ta te".split(" "),w={ca:["color","contrast","controls","sepia","videos"],cs:["stop"],da:"backup hue_rotation loop loop_start stop support sepia variant".split(" "),
-de:"autoplay backup export import loop_start playlists screenshot sepia stop videos".split(" "),el:["theme"],es:["color","sepia"],es_419:["color","sepia","videos"],et:["variant"],fr:["options","support","volume","stop","message"],hr:["autoplay","mini_player","save","video_player"],id:"autoplay backup gaussian_blur reset screenshot sepia stop volume".split(" "),it:"backup loop mini_player mouse playlists reset screenshot sepia volume".split(" "),ms:["import","sepia"],nl:"autoplay filters support contrast sepia variant volume".split(" "),
-no:["loop_start","sepia","variant"],pl:["sepia"],pt_BR:"backup loop mini_player mouse playlists volume".split(" "),pt_PT:["backup","volume"],ro:["backup","gaussian_blur","contrast","mouse","sepia"],sk:["message"],sl:["sepia"],sr:["sepia"],sv:["loop","support","sepia","variant"],vi:["videos"]};c.querySelectorAll("nav a").forEach(a=>{a.addEventListener("focus",function(){this.parentNode.classList.add("focus")});a.addEventListener("blur",function(){this.parentNode.classList.remove("focus")})});var h=
-c.querySelector("#locale"),d=c.querySelectorAll("[contenteditable]"),n=c.querySelector("#description"),p=c.querySelector("#generate-code-btn");h.addEventListener("change",function(){m=h.options[h.selectedIndex].dataset.dir;v=h.options[h.selectedIndex].textContent;if(""===this.value||0<=B.indexOf(this.value)){for(var a=d.length-1;0<=a;a--)d[a].textContent="",d[a].dir="ltr";p.disabled=""===this.value?!0:!1}else fetch(chrome.runtime.getURL(`_locales/${this.value}/messages.json`)).then(b=>b.json()).then(b=>
-{for(var e=d.length-1,l;0<=e;e--)l=b[d[e].id].message,"en_US"===b.locale_code.message||"en_GB"===b.locale_code.message?d[e].innerText=l:l!==d[e].previousElementSibling.innerText||w[b.locale_code.message]&&0<=w[b.locale_code.message].indexOf(d[e].id)?d[e].innerText=l:d[e].textContent="",d[e].dir=m;p.disabled=!1})});n.addEventListener("keyup",function(){132<this.textContent.length&&(this.textContent=this.textContent.substr(0,132),this.blur())});p.addEventListener("click",()=>{var a={},b=c.querySelector("#locale").value;
-if(""!==b){a.locale_code={message:b};a.locale_dir={message:m};b=0;for(var e;b<d.length;b++)e=d[b].innerText.trim(),""===e&&(e=d[b].previousElementSibling.innerText),a[d[b].id]={message:e};C.textContent=`${v} Translation - Enhancer for YouTube\u2122`;x.value=JSON.stringify(a).replace(/^\{/,"{\n    ").replace(/":\{"/gm,'": {"').replace(/":"/gm,'": "').replace(/"\},"/gm,'"},\n    "').replace(/\}$/,"\n}");r(f)}});var g=c.querySelector("#modal-backdrop"),y=c.querySelector("nav .donate a"),k=c.querySelector("#donate-modal"),
-z=k.querySelector(".close-modal"),f=c.querySelector("#i18n-modal"),C=f.querySelector(".modal-title"),A=f.querySelector(".close-modal"),x=f.querySelector("#code");n=f.querySelector("#copy-to-clipboard-btn");var q=f.querySelector("#copy-to-clipboard-checkmark");y.addEventListener("click",a=>{a.preventDefault();chrome.storage.local.get({localecode:chrome.i18n.getMessage("locale_code")},b=>{b=0>"bg ca cs da de el es et fi fr hr hu it lt lv nl pl pt_PT ro sk sl sv".indexOf(b.localecode)?"USD":"EUR";k.querySelector(".donate-buttons").dataset.currencyCode=
-b;r(k)})});k.querySelectorAll(".donate-buttons button").forEach(a=>{a.addEventListener("click",function(){chrome.storage.local.get({localecode:chrome.i18n.getMessage("locale_code")},b=>{b=0>"bg ca cs da de el es et fi fr hr hu it lt lv nl pl pt_PT ro sk sl sv".indexOf(b.localecode)?"USD":"EUR";b=y.dataset.paypal.replace(/AMOUNT/,this.dataset.amount).replace(/CURRENCY_CODE/,b);chrome.tabs.create({url:b,active:!0})})})});z.addEventListener("click",()=>{t(k)});A.addEventListener("click",()=>{t(f)});
-n.addEventListener("click",async()=>{await navigator.clipboard.writeText(x.value);q.classList.add("show")});q.addEventListener("animationend",a=>{"checkmark-scale"===a.animationName&&setTimeout(()=>{q.classList.remove("show")},1200)});c.addEventListener("keydown",a=>{"Escape"===a.key&&(z.click(),A.click())});window.addEventListener("resize",u);u()})(document);
+((document) => {
+    const body = document.body;
+    const modalBackdrop = document.querySelector("#modal-backdrop");
+    const donateModal = document.querySelector("#donate-modal");
+    const i18nModal = document.querySelector("#i18n-modal");
+    const generateCodeBtn = document.querySelector("#generate-code-btn");
+    const localeSelect = document.querySelector("#locale");
+    const contentEditableElements = document.querySelectorAll("[contenteditable]");
+    const description = document.querySelector("#description");
+    const copyToClipboardBtn = document.querySelector("#copy-to-clipboard-btn");
+    const copyToClipboardCheckmark = document.querySelector("#copy-to-clipboard-checkmark");
+    const donateLink = document.querySelector("nav .donate a");
+    const donateButtons = donateModal.querySelectorAll(".donate-buttons button");
+    const closeModalButtons = document.querySelectorAll(".close-modal");
+    const modalTitle = i18nModal.querySelector(".modal-title");
+    const codeTextarea = i18nModal.querySelector("#code");
+
+    const rtlLocales = ["am", "bn", "fil", "gu", "kn", "ml", "mr", "sw", "ta", "te"];
+    const specialCases = {
+        ca: ["color", "contrast", "controls", "sepia", "videos"],
+        cs: ["stop"],
+        da: ["backup", "hue_rotation", "loop", "loop_start", "stop", "support", "sepia", "variant"],
+        de: ["autoplay", "backup", "export", "import", "loop_start", "playlists", "screenshot", "sepia", "stop", "videos"],
+        el: ["theme"],
+        es: ["color", "sepia"],
+        es_419: ["color", "sepia", "videos"],
+        et: ["variant"],
+        fr: ["options", "support", "volume", "stop", "message"],
+        hr: ["autoplay", "mini_player", "save", "video_player"],
+        id: ["autoplay", "backup", "gaussian_blur", "reset", "screenshot", "sepia", "stop", "volume"],
+        it: ["backup", "loop", "mini_player", "mouse", "playlists", "reset", "screenshot", "sepia", "volume"],
+        ms: ["import", "sepia"],
+        nl: ["autoplay", "filters", "support", "contrast", "sepia", "variant", "volume"],
+        no: ["loop_start", "sepia", "variant"],
+        pl: ["sepia"],
+        pt_BR: ["backup", "loop", "mini_player", "mouse", "playlists", "volume"],
+        pt_PT: ["backup", "volume"],
+        ro: ["backup", "gaussian_blur", "contrast", "mouse", "sepia"],
+        sk: ["message"],
+        sl: ["sepia"],
+        sr: ["sepia"],
+        sv: ["loop", "support", "sepia", "variant"],
+        vi: ["videos"]
+    };
+
+    function showModal(modal) {
+        body.classList.add("overflow-hidden");
+        modalBackdrop.style.display = "block";
+        modal.style.display = "block";
+        modal.scrollTop = 0;
+        modalBackdrop.classList.add("in");
+        setTimeout(() => {
+            body.classList.add("modal-open");
+            modal.querySelector("button.close-modal").focus();
+        }, 50);
+    }
+
+    function hideModal(modal) {
+        body.classList.remove("modal-open");
+        setTimeout(() => {
+            modal.style.display = "none";
+            modalBackdrop.classList.add("fade");
+            modalBackdrop.classList.remove("in");
+            setTimeout(() => {
+                modalBackdrop.style.display = "none";
+                body.classList.remove("overflow-hidden");
+                if (modal.id === "donate-modal") {
+                    document.querySelector("nav .donate a").focus();
+                } else if (modal.id === "i18n-modal") {
+                    generateCodeBtn.focus();
+                }
+            }, 300);
+        }, 300);
+    }
+
+    function updateMainInsetShadow() {
+        const main = document.querySelector("main");
+        const style = document.createElement("style");
+        style.textContent = `:root{--main-inset-shadow-top:${main.offsetTop}px;--main-inset-shadow-width:${main.clientWidth}px}`;
+        document.head.appendChild(style);
+    }
+
+    function handleLocaleChange() {
+        const selectedOption = localeSelect.options[localeSelect.selectedIndex];
+        const dir = selectedOption.dataset.dir;
+        const locale = selectedOption.value;
+        const localeName = selectedOption.textContent;
+
+        if (!locale || rtlLocales.includes(locale)) {
+            contentEditableElements.forEach(el => {
+                el.textContent = "";
+                el.dir = "ltr";
+            });
+            generateCodeBtn.disabled = !locale;
+        } else {
+            fetch(chrome.runtime.getURL(`_locales/${locale}/messages.json`))
+                .then(response => response.json())
+                .then(messages => {
+                    contentEditableElements.forEach(el => {
+                        const message = messages[el.id].message;
+                        if (["en_US", "en_GB"].includes(messages.locale_code.message) || message !== el.previousElementSibling.innerText || (specialCases[messages.locale_code.message] && specialCases[messages.locale_code.message].includes(el.id))) {
+                            el.innerText = message;
+                        } else {
+                            el.textContent = "";
+                        }
+                        el.dir = dir;
+                    });
+                    generateCodeBtn.disabled = false;
+                });
+        }
+    }
+
+    function handleDescriptionKeyup() {
+        if (description.textContent.length > 132) {
+            description.textContent = description.textContent.substr(0, 132);
+            description.blur();
+        }
+    }
+
+    function handleGenerateCodeClick() {
+        const locale = localeSelect.value;
+        if (!locale) return;
+
+        const translation = {
+            locale_code: { message: locale },
+            locale_dir: { message: localeSelect.options[localeSelect.selectedIndex].dataset.dir }
+        };
+
+        contentEditableElements.forEach(el => {
+            const message = el.innerText.trim() || el.previousElementSibling.innerText;
+            translation[el.id] = { message };
+        });
+
+        modalTitle.textContent = `${localeSelect.options[localeSelect.selectedIndex].textContent} Translation - Enhancer for YouTube™`;
+        codeTextarea.value = JSON.stringify(translation, null, 4);
+        showModal(i18nModal);
+    }
+
+    function handleDonateClick(event) {
+        event.preventDefault();
+        chrome.storage.local.get({ localecode: chrome.i18n.getMessage("locale_code") }, ({ localecode }) => {
+            const currencyCode = ["bg", "ca", "cs", "da", "de", "el", "es", "et", "fi", "fr", "hr", "hu", "it", "lt", "lv", "nl", "pl", "pt_PT", "ro", "sk", "sl", "sv"].includes(localecode) ? "EUR" : "USD";
+            donateModal.querySelector(".donate-buttons").dataset.currencyCode = currencyCode;
+            showModal(donateModal);
+        });
+    }
+
+    function handleDonateButtonClick(event) {
+        const amount = event.currentTarget.dataset.amount;
+        chrome.storage.local.get({ localecode: chrome.i18n.getMessage("locale_code") }, ({ localecode }) => {
+            const currencyCode = ["bg", "ca", "cs", "da", "de", "el", "es", "et", "fi", "fr", "hr", "hu", "it", "lt", "lv", "nl", "pl", "pt_PT", "ro", "sk", "sl", "sv"].includes(localecode) ? "EUR" : "USD";
+            const url = donateLink.dataset.paypal.replace(/AMOUNT/, amount).replace(/CURRENCY_CODE/, currencyCode);
+            chrome.tabs.create({ url, active: true });
+        });
+    }
+
+    function handleCopyToClipboardClick() {
+        navigator.clipboard.writeText(codeTextarea.value).then(() => {
+            copyToClipboardCheckmark.classList.add("show");
+        });
+    }
+
+    function handleCheckmarkAnimationEnd(event) {
+        if (event.animationName === "checkmark-scale") {
+            setTimeout(() => {
+                copyToClipboardCheckmark.classList.remove("show");
+            }, 1200);
+        }
+    }
+
+    function handleKeydown(event) {
+        if (event.key === "Escape") {
+            closeModalButtons.forEach(button => button.click());
+        }
+    }
+
+    localeSelect.addEventListener("change", handleLocaleChange);
+    description.addEventListener("keyup", handleDescriptionKeyup);
+    generateCodeBtn.addEventListener("click", handleGenerateCodeClick);
+    donateLink.addEventListener("click", handleDonateClick);
+    donateButtons.forEach(button => button.addEventListener("click", handleDonateButtonClick));
+    closeModalButtons.forEach(button => button.addEventListener("click", () => hideModal(button.closest(".modal"))));
+    copyToClipboardBtn.addEventListener("click", handleCopyToClipboardClick);
+    copyToClipboardCheckmark.addEventListener("animationend", handleCheckmarkAnimationEnd);
+    document.addEventListener("keydown", handleKeydown);
+    window.addEventListener("resize", updateMainInsetShadow);
+
+    updateMainInsetShadow();
+})(document);
